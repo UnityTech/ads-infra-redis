@@ -1,0 +1,35 @@
+#
+# - state-machine controlling a redis-server process
+#
+initial: setup
+terminal: shutdown
+states:
+- tag: setup
+  shell: |
+
+    #
+    # - make sure /data is there
+    # - append the redis + statsd telegraf input
+    # - start telegraf
+    #
+    mkdir -p /data
+    cat <<-EOF >> /etc/telegraf/telegraf.conf
+    [[inputs.statsd]]
+      service_address = "127.0.0.1:8125"
+    [[inputs.redis]]
+    EOF
+    supervisorctl restart telegraf
+
+    #
+    # - if the configuration is specified via annotation get it
+    # - make sure to remove the enclosing double quotes
+    # - otherwise use the local proxy.cfg
+    # - put the configuration under /data/proxy.cfg
+    # - start redis
+    #
+    CFG=$(echo $KONTROL_ANNOTATIONS | jq '."redis.unity3d.com/config" | select (.!=null)' | sed -e 's/^"//' -e 's/"$//')
+    CFG=${CFG:=$(cat redis.cfg)} 
+    echo "$CFG" | awk '{gsub(/\\n/,"\n")}1' > /data/redis.cfg
+    supervisorctl restart redis
+  
+- tag: shutdown
