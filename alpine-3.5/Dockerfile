@@ -1,4 +1,4 @@
-FROM registry2.applifier.info:5005/ads-infra-kontrol-alpine-3.5:1.1
+FROM registry2.applifier.info:5005/ads-infra-kontrol-alpine-3.5:1.0.0
 
 ENV REDIS_VERSION=3.0.7 \
 	REDIS_SHA=e56b4b7e033ae8dbf311f9191cf6fdf3ae974d1c
